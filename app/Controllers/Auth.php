@@ -1,14 +1,13 @@
 <?php
 namespace App\Controllers;
 use App\Models\UserModel;
-use App\Models\SiswaModel;
-use App\Models\GuruModel;
+use App\Models\CalonModel;
+use App\Models\PengujiModel;
 
 class Auth extends BaseController
 {
     public function login()
     {
-        // Jika sudah login, arahkan ke dashboard masing-masing
         if (session()->get('logged_in')) {
             return $this->redirectDashboard();
         }
@@ -48,8 +47,8 @@ class Auth extends BaseController
                 return redirect()->to('/login');
             }
         } 
-        elseif ($role === 'guru') {
-            $model = new GuruModel();
+        elseif ($role === 'penguji') {
+            $model = new PengujiModel();
             $data = $model->where('nip', $username)->first();
             
             if ($data) {
@@ -60,47 +59,47 @@ class Auth extends BaseController
                         'id'        => $data['id'],
                         'username'  => $data['nip'],
                         'nama'      => $data['nama'],
-                        'role'      => 'guru',
+                        'role'      => 'penguji',
                         'logged_in' => TRUE
                     ];
                     $session->set($ses_data);
-                    return redirect()->to('/guru');
+                    return redirect()->to('/penguji');
                 } else {
-                    $session->setFlashdata('error', 'Password Guru Salah');
+                    $session->setFlashdata('error', 'Password Penguji Salah');
                     return redirect()->to('/login');
                 }
             } else {
-                $session->setFlashdata('error', 'NIP Guru tidak ditemukan');
+                $session->setFlashdata('error', 'NIP Penguji tidak ditemukan');
                 return redirect()->to('/login');
             }
         } 
         else {
-            // Siswa
-            $model = new SiswaModel();
-            $data = $model->where('nis', $username)->first();
+            // Calon Mahasiswa
+            $model = new CalonModel();
+            $data = $model->where('nomor_pendaftaran', $username)->first();
             
             if ($data) {
                 $verify_pass = password_verify($password, $data['password']) 
                             || $password === $data['password'] 
                             || $password === $data['tanggal_lahir'] 
-                            || $password === $data['nis'];
+                            || $password === $data['nomor_pendaftaran'];
                 
                 if ($verify_pass) {
                     $ses_data = [
                         'id'        => $data['id'],
-                        'username'  => $data['nis'],
+                        'username'  => $data['nomor_pendaftaran'],
                         'nama'      => $data['nama'],
-                        'role'      => 'siswa',
+                        'role'      => 'calon',
                         'logged_in' => TRUE
                     ];
                     $session->set($ses_data);
-                    return redirect()->to('/siswa');
+                    return redirect()->to('/calon');
                 } else {
-                    $session->setFlashdata('error', 'Password Siswa Salah (Default: tanggal lahir YYYY-MM-DD)');
+                    $session->setFlashdata('error', 'Password Salah (Default: tanggal lahir YYYY-MM-DD)');
                     return redirect()->to('/login');
                 }
             } else {
-                $session->setFlashdata('error', 'NIS Siswa tidak ditemukan');
+                $session->setFlashdata('error', 'Nomor Pendaftaran tidak ditemukan');
                 return redirect()->to('/login');
             }
         }
@@ -111,52 +110,57 @@ class Auth extends BaseController
         if (session()->get('logged_in')) {
             return $this->redirectDashboard();
         }
-        return view('auth/register');
+        
+        $db = \Config\Database::connect();
+        $prodi = $db->table('program_studi')->get()->getResultArray();
+        
+        return view('auth/register', ['prodi' => $prodi]);
     }
 
     public function registerProcess()
     {
         $session = session();
-        $nis = $this->request->getVar('nis');
         $nama = $this->request->getVar('nama');
-        $kelas = $this->request->getVar('kelas');
         $email = $this->request->getVar('email');
         $tanggal_lahir = $this->request->getVar('tanggal_lahir');
+        $asal_sekolah = $this->request->getVar('asal_sekolah');
+        $prodi_id = $this->request->getVar('prodi_id');
         $passwordInput = $this->request->getVar('password');
 
-        $model = new SiswaModel();
+        $model = new CalonModel();
         
-        $existing = $model->where('nis', $nis)->first();
-        if ($existing) {
-            $session->setFlashdata('error', 'NIS sudah terdaftar.');
-            return redirect()->to('/register');
-        }
+        // Generate nomor pendaftaran otomatis
+        $db = \Config\Database::connect();
+        $lastRow = $model->orderBy('id', 'DESC')->first();
+        $nextId = $lastRow ? $lastRow['id'] + 1 : 1;
+        $nomor_pendaftaran = 'PMB2026' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
 
         $password = !empty($passwordInput) ? password_hash($passwordInput, PASSWORD_DEFAULT) : password_hash($tanggal_lahir, PASSWORD_DEFAULT);
 
         $model->save([
-            'nis'           => $nis,
-            'nama'          => $nama,
-            'kelas'         => $kelas,
-            'email'         => $email,
-            'tanggal_lahir' => $tanggal_lahir,
-            'password'      => $password
+            'nomor_pendaftaran' => $nomor_pendaftaran,
+            'nama'              => $nama,
+            'email'             => $email,
+            'tanggal_lahir'     => $tanggal_lahir,
+            'asal_sekolah'      => $asal_sekolah,
+            'prodi_id'          => $prodi_id,
+            'status_seleksi'    => 'pending',
+            'password'          => $password
         ]);
 
-        $siswaId = $model->insertID();
+        $calonId = $model->insertID();
 
-        // Inisialisasi nilai untuk semua mata pelajaran (default = 0)
-        $db = \Config\Database::connect();
-        $subjects = $db->table('matapelajaran')->get()->getResultArray();
+        // Inisialisasi nilai untuk semua mata seleksi default
+        $subjects = $db->table('mata_uji')->get()->getResultArray();
         foreach ($subjects as $sub) {
-            $db->table('nilai')->insert([
-                'siswa_id'  => $siswaId,
-                'mapel_id' => $sub['id'],
-                'nilai'    => 0
+            $db->table('nilai_seleksi')->insert([
+                'calon_id'     => $calonId,
+                'mata_uji_id'  => $sub['id'],
+                'nilai'        => 0
             ]);
         }
 
-        $session->setFlashdata('success', 'Pendaftaran Siswa berhasil! Password default Anda adalah tanggal lahir (' . $tanggal_lahir . '). Silakan login.');
+        $session->setFlashdata('success', 'Pendaftaran berhasil! Nomor Pendaftaran Anda: ' . $nomor_pendaftaran . '. Password default Anda adalah tanggal lahir (' . $tanggal_lahir . '). Silakan login.');
         return redirect()->to('/login');
     }
 
@@ -171,10 +175,10 @@ class Auth extends BaseController
         $role = session()->get('role');
         if ($role === 'admin') {
             return redirect()->to('/admin');
-        } elseif ($role === 'guru') {
-            return redirect()->to('/guru');
+        } elseif ($role === 'penguji') {
+            return redirect()->to('/penguji');
         } else {
-            return redirect()->to('/siswa');
+            return redirect()->to('/calon');
         }
     }
 }

@@ -11,7 +11,7 @@
         <!-- Header Info -->
         <div class="d-flex justify-content-between align-items-center mb-4 p-3 bg-white border rounded shadow-sm">
             <div>
-                <h4 class="mb-0 fw-bold text-success"><i class="bi bi-person-workspace"></i> Portal Guru Pengajar</h4>
+                <h4 class="mb-0 fw-bold text-success"><i class="bi bi-person-badge-fill"></i> Portal Dosen Penguji PMB</h4>
                 <small class="text-muted">Masuk sebagai: <strong><?= session()->get('nama'); ?></strong> (NIP: <?= session()->get('username'); ?>)</small>
             </div>
             <div>
@@ -34,32 +34,32 @@
             </div>
         <?php endif; ?>
 
-        <!-- MATA PELAJARAN YANG DIAJAR -->
+        <!-- MATA UJIAN YANG DIUJI -->
         <div class="card shadow-sm mb-4 border-0">
             <div class="card-header bg-success text-white py-3">
-                <h5 class="mb-0 fw-bold"><i class="bi bi-book"></i> Mata Pelajaran yang Anda Ajar</h5>
+                <h5 class="mb-0 fw-bold"><i class="bi bi-file-earmark-text-fill"></i> Materi Ujian Seleksi Anda</h5>
             </div>
             <div class="card-body bg-white">
                 <div class="row">
-                    <?php if(!empty($mapel)) : foreach($mapel as $m) : ?>
-                        <div class="col-md-4 mb-2">
+                    <?php if(!empty($mata_uji)) : foreach($mata_uji as $mu) : ?>
+                        <div class="col-md-6 mb-2">
                             <div class="p-3 border rounded shadow-sm bg-light">
-                                <h6 class="fw-bold mb-1 text-success"><?= $m['nama_mapel']; ?></h6>
-                                <small class="text-muted">ID Pelajaran: <?= $m['id']; ?></small>
+                                <h6 class="fw-bold mb-1 text-success"><?= $mu['nama_ujian']; ?></h6>
+                                <small class="text-muted">Materi Uji ID: <?= $mu['id']; ?></small>
                             </div>
                         </div>
                     <?php endforeach; else : ?>
-                        <div class="col-12"><div class="alert alert-warning mb-0">Anda belum ditugaskan untuk mengajar mata pelajaran apa pun. Silakan hubungi admin.</div></div>
+                        <div class="col-12"><div class="alert alert-warning mb-0">Anda belum ditugaskan untuk menguji materi seleksi apa pun. Silakan hubungi panitia PMB.</div></div>
                     <?php endif; ?>
                 </div>
             </div>
         </div>
 
-        <!-- MANAJEMEN NILAI SISWA -->
-        <?php if(!empty($mapel)) : ?>
+        <!-- DAFTAR CALON MAHASISWA & INPUT NILAI -->
+        <?php if(!empty($mata_uji)) : ?>
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-dark text-white py-3">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-star-fill text-warning"></i> Input & Edit Nilai Siswa</h5>
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-star-fill text-warning"></i> Penilaian Ujian Masuk Calon Mahasiswa</h5>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -67,26 +67,28 @@
                             <thead class="table-light">
                                 <tr>
                                     <th style="width: 50px;">No</th>
-                                    <th>NIS</th>
-                                    <th>Nama Siswa</th>
-                                    <th>Kelas</th>
-                                    <?php foreach($mapel as $m) : ?>
-                                        <th class="text-center"><?= $m['nama_mapel']; ?></th>
+                                    <th>No. Daftar</th>
+                                    <th>Nama Calon Mahasiswa</th>
+                                    <th>Asal Sekolah</th>
+                                    <th>Prodi Pilihan</th>
+                                    <?php foreach($mata_uji as $mu) : ?>
+                                        <th class="text-center"><?= $mu['nama_ujian']; ?></th>
                                     <?php endforeach; ?>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php $i = 1; foreach($siswa as $s) : ?>
+                                <?php $i = 1; foreach($calon as $c) : ?>
                                 <tr>
                                     <td><?= $i++; ?></td>
-                                    <td><?= $s['nis']; ?></td>
-                                    <td class="fw-bold text-dark"><?= $s['nama']; ?></td>
-                                    <td><span class="badge bg-secondary"><?= $s['kelas']; ?></span></td>
-                                    <?php foreach($mapel as $m) : ?>
+                                    <td><code class="fw-bold"><?= $c['nomor_pendaftaran']; ?></code></td>
+                                    <td class="fw-bold text-dark"><?= $c['nama']; ?></td>
+                                    <td><?= $c['asal_sekolah']; ?></td>
+                                    <td><span class="badge bg-secondary"><?= $c['nama_prodi']; ?></span></td>
+                                    <?php foreach($mata_uji as $mu) : ?>
                                         <td class="text-center">
-                                            <span class="fw-bold fs-5 d-block text-primary"><?= $s['nilai'][$m['id']]; ?></span>
-                                            <a href="/guru/nilai/edit/<?= $s['id']; ?>/<?= $m['id']; ?>" class="btn btn-outline-success btn-xs py-0 px-2 mt-1" style="font-size: 11px;">
-                                                <i class="bi bi-pencil-fill"></i> Edit Nilai
+                                            <span class="fw-bold fs-5 d-block text-primary"><?= $c['nilai'][$mu['id']]; ?></span>
+                                            <a href="/penguji/nilai/edit/<?= $c['id']; ?>/<?= $mu['id']; ?>" class="btn btn-outline-success btn-xs py-0 px-2 mt-1" style="font-size: 11px;">
+                                                <i class="bi bi-pencil-fill"></i> Input/Edit Nilai
                                             </a>
                                         </td>
                                     <?php endforeach; ?>

@@ -16,34 +16,34 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
     // ADMIN ROUTES
     $routes->get('/admin', 'Admin::index');
     
-    // Admin - CRUD Siswa
-    $routes->get('/admin/siswa/create', 'Admin::siswaCreate');
-    $routes->post('/admin/siswa/store', 'Admin::siswaStore');
-    $routes->get('/admin/siswa/edit/(:num)', 'Admin::siswaEdit/$1');
-    $routes->post('/admin/siswa/update/(:num)', 'Admin::siswaUpdate/$1');
-    $routes->post('/admin/siswa/delete/(:num)', 'Admin::siswaDelete/$1'); // Use POST/DELETE for safety, or direct post
+    // Admin - CRUD Calon Mahasiswa
+    $routes->get('/admin/calon/create', 'Admin::calonCreate');
+    $routes->post('/admin/calon/store', 'Admin::calonStore');
+    $routes->get('/admin/calon/edit/(:num)', 'Admin::calonEdit/$1');
+    $routes->post('/admin/calon/update/(:num)', 'Admin::calonUpdate/$1');
+    $routes->post('/admin/calon/delete/(:num)', 'Admin::calonDelete/$1');
     
-    // Admin - CRUD Guru
-    $routes->get('/admin/guru/create', 'Admin::guruCreate');
-    $routes->post('/admin/guru/store', 'Admin::guruStore');
-    $routes->get('/admin/guru/edit/(:num)', 'Admin::guruEdit/$1');
-    $routes->post('/admin/guru/update/(:num)', 'Admin::guruUpdate/$1');
-    $routes->post('/admin/guru/delete/(:num)', 'Admin::guruDelete/$1');
+    // Admin - CRUD Penguji
+    $routes->get('/admin/penguji/create', 'Admin::pengujiCreate');
+    $routes->post('/admin/penguji/store', 'Admin::pengujiStore');
+    $routes->get('/admin/penguji/edit/(:num)', 'Admin::pengujiEdit/$1');
+    $routes->post('/admin/penguji/update/(:num)', 'Admin::pengujiUpdate/$1');
+    $routes->post('/admin/penguji/delete/(:num)', 'Admin::pengujiDelete/$1');
     
-    // Admin - CRUD Mapel
-    $routes->get('/admin/mapel/create', 'Admin::mapelCreate');
-    $routes->post('/admin/mapel/store', 'Admin::mapelStore');
-    $routes->get('/admin/mapel/edit/(:num)', 'Admin::mapelEdit/$1');
-    $routes->post('/admin/mapel/update/(:num)', 'Admin::mapelUpdate/$1');
-    $routes->post('/admin/mapel/delete/(:num)', 'Admin::mapelDelete/$1');
+    // Admin - CRUD Prodi
+    $routes->get('/admin/prodi/create', 'Admin::prodiCreate');
+    $routes->post('/admin/prodi/store', 'Admin::prodiStore');
+    $routes->get('/admin/prodi/edit/(:num)', 'Admin::prodiEdit/$1');
+    $routes->post('/admin/prodi/update/(:num)', 'Admin::prodiUpdate/$1');
+    $routes->post('/admin/prodi/delete/(:num)', 'Admin::prodiDelete/$1');
 
-    // GURU ROUTES
-    $routes->get('/guru', 'Guru::index');
-    $routes->get('/guru/nilai/edit/(:num)/(:num)', 'Guru::editNilai/$1/$2');
-    $routes->post('/guru/nilai/update/(:num)/(:num)', 'Guru::updateNilai/$1/$2');
+    // PENGUJI ROUTES
+    $routes->get('/penguji', 'Penguji::index');
+    $routes->get('/penguji/nilai/edit/(:num)/(:num)', 'Penguji::editNilai/$1/$2');
+    $routes->post('/penguji/nilai/update/(:num)/(:num)', 'Penguji::updateNilai/$1/$2');
 
-    // SISWA ROUTES
-    $routes->get('/siswa', 'Siswa::index');
-    $routes->get('/siswa/profil', 'Siswa::profil');
-    $routes->post('/siswa/profil/update', 'Siswa::updateProfil');
+    // CALON MAHASISWA ROUTES
+    $routes->get('/calon', 'Calon::index');
+    $routes->get('/calon/profil', 'Calon::profil');
+    $routes->post('/calon/profil/update', 'Calon::updateProfil');
 });

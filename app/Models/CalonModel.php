@@ -2,12 +2,12 @@
 namespace App\Models;
 use CodeIgniter\Model;
 
-class SiswaModel extends Model
+class CalonModel extends Model
 {
-    protected $table            = 'siswa';
+    protected $table            = 'calon_mahasiswa';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
-    protected $allowedFields    = ['nis', 'nama', 'kelas', 'email', 'password', 'tanggal_lahir'];
+    protected $allowedFields    = ['nomor_pendaftaran', 'nama', 'email', 'tanggal_lahir', 'asal_sekolah', 'prodi_id', 'status_seleksi', 'password'];
 
     protected $useTimestamps = true;
     protected $dateFormat    = 'datetime';

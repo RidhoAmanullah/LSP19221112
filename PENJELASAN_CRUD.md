@@ -1,73 +1,74 @@
-# PENJELASAN IMPLEMENTASI CRUD - BIMBEL ONLINE
-**Proyek: Sistem Informasi Bimbel Online (Siswa, Guru, Admin)**
+# PENJELASAN IMPLEMENTASI CRUD - PMB STKIP SINGKAWANG
+**Proyek: Sistem Informasi Penerimaan Mahasiswa Baru (Calon, Penguji, Admin)**
 **Panduan Uji Kompetensi LSP - Skema Analis Program**
 
-Dokumen ini menjelaskan bagaimana konsep **CRUD (Create, Read, Update, Delete)** dirancang dan diimplementasikan pada aplikasi Bimbel Online ini menggunakan Framework **CodeIgniter 4**. Penjelasan ini dirancang sederhana agar Anda dapat memaparkannya dengan mudah di hadapan Asesor.
+Dokumen ini menjelaskan bagaimana konsep **CRUD (Create, Read, Update, Delete)** dirancang dan diimplementasikan pada aplikasi PMB STKIP Singkawang menggunakan Framework **CodeIgniter 4**. Panduan ini dirancang agar Anda dapat memaparkannya dengan mudah di hadapan Asesor.
 
 ---
 
 ## 📌 1. Pembagian Hak Akses (Otorisasi CRUD)
-Untuk menjaga keamanan data, hak operasi CRUD dibagi berdasarkan peran (*role*) pengguna:
-* **Admin**: Memiliki hak akses penuh **CRUD** untuk data **Siswa**, **Guru**, dan **Mata Pelajaran**.
-* **Guru**: Memiliki hak **Read** data siswa & mapel yang diajarnya, serta **Create & Update** untuk **Nilai Siswa**.
-* **Siswa**: Hanya memiliki hak **Read** untuk melihat data profil dan transkrip nilai miliknya sendiri, serta **Update** khusus data profil mandiri.
+Untuk menjaga keamanan data seleksi pendaftaran, operasi CRUD dibatasi sebagai berikut:
+* **Admin (Panitia PMB)**: Memiliki hak akses penuh **CRUD** untuk data **Calon Mahasiswa**, **Dosen Penguji**, dan **Program Studi** (termasuk mengubah status kelulusan calon mahasiswa).
+* **Penguji (Dosen Penguji)**: Memiliki hak **Read** data calon mahasiswa & mata uji yang diujinya, serta **Create & Update** untuk **Nilai Hasil Ujian Seleksi**.
+* **Calon Mahasiswa**: Hanya memiliki hak **Read** untuk melihat data profil pendaftaran, status kelulusan, dan nilai ujian masuk miliknya sendiri, serta **Update** khusus data profil mandirinya.
 
 ---
 
 ## 📂 2. Penjelasan Alur CRUD & Contoh Kode
 
 ### 🟢 A. CREATE (Membuat / Menambah Data)
-*Create* digunakan untuk menyimpan data baru ke dalam database.
-* **Contoh Kasus**: Admin menambah data siswa baru.
-* **Kode Program (Controller)**: Terletak di [Admin::siswaStore()](file:///D:/LSP/19221112/19221112/app/Controllers/Admin.php#L39-L72)
+*Create* digunakan untuk menyimpan data pendaftaran baru ke database.
+* **Contoh Kasus**: Calon Mahasiswa mendaftar PMB secara online.
+* **Kode Program (Controller)**: Terletak di [Auth::registerProcess()](file:///D:/LSP/19221112/19221112/app/Controllers/Auth.php#L130-L167)
 * **Cara Menjelaskan ke Asesor**:
-  1. Pengguna mengisi form input di view [siswa_create.php](file:///D:/LSP/19221112/19221112/app/Views/admin/siswa_create.php).
-  2. Saat tombol Submit ditekan, data dikirim melalui metode **POST** ke route `/admin/siswa/store`.
-  3. Controller menerima input data (`getVar()`) dan mengenkripsi password default menggunakan `password_hash()`.
-  4. Controller memanggil `siswaModel->save()` untuk menyimpan data ke tabel `siswa`.
-  5. Sebagai bagian dari integrasi, sistem secara otomatis menginisialisasi baris data nilai baru untuk siswa tersebut di tabel `nilai` dengan nilai default `0`.
+  1. Calon mahasiswa mengisi form di view [register.php](file:///D:/LSP/19221112/19221112/app/Views/auth/register.php).
+  2. Saat tombol diklik, data dikirim menggunakan metode **POST** ke route `/register/process`.
+  3. Controller secara otomatis membuat **Nomor Pendaftaran** unik dengan format `PMB2026xxxx` (ditentukan dari ID pendaftar terakhir).
+  4. Password pendaftar dienkripsi menggunakan `password_hash()` (default-nya adalah tanggal lahir).
+  5. Controller memanggil `calonModel->save()` untuk menyimpan data ke tabel `calon_mahasiswa`.
+  6. Sistem otomatis menyisipkan data nilai default `0` untuk mata seleksi pendaftar tersebut di tabel `nilai_seleksi`.
 
 ---
 
 ### 🔵 B. READ (Membaca / Menampilkan Data)
-*Read* digunakan untuk mengambil data dari database dan menampilkannya di halaman web.
-* **Contoh Kasus**: Menampilkan daftar Mata Pelajaran beserta nama guru pengajarnya.
-* **Kode Program (Controller)**: Terletak di [Admin::index()](file:///D:/LSP/19221112/19221112/app/Controllers/Admin.php#L24-L34)
+*Read* digunakan untuk menampilkan data dari database secara terstruktur.
+* **Contoh Kasus**: Menampilkan daftar pendaftar beserta pilihan Program Studi mereka.
+* **Kode Program (Controller)**: Terletak di [Admin::index()](file:///D:/LSP/19221112/19221112/app/Controllers/Admin.php#L26-L37)
 * **Cara Menjelaskan ke Asesor**:
-  1. Controller menggunakan Query Builder untuk mengambil seluruh data dari tabel `matapelajaran`.
-  2. Dilakukan teknik SQL **JOIN** dengan tabel `guru` (`guru.id = matapelajaran.guru_id`) agar nama guru pengajar dapat ditampilkan bersama data mata pelajaran.
-  3. Data dikirim ke view [index.php](file:///D:/LSP/19221112/19221112/app/Views/admin/index.php) menggunakan parameter `$data`.
-  4. View memproses data tersebut menggunakan perulangan `foreach` untuk memformatnya menjadi tabel HTML Bootstrap yang rapi.
+  1. Controller menggunakan Query Builder untuk memuat seluruh pendaftar.
+  2. Diterapkan kueri **JOIN** antara tabel `calon_mahasiswa` dan `program_studi` (`program_studi.id = calon_mahasiswa.prodi_id`) agar nama program studi pilihan pendaftar dapat dibaca secara relasional.
+  3. Data tersebut dikirim ke view [index.php](file:///D:/LSP/19221112/19221112/app/Views/admin/index.php) menggunakan parameter `$data`.
+  4. View merender baris data ke dalam tabel HTML Bootstrap menggunakan perulangan `foreach`.
 
 ---
 
 ### 🟡 C. UPDATE (Mengubah / Memperbarui Data)
-*Update* digunakan untuk mengubah data yang sudah ada di database berdasarkan ID unik data tersebut.
-* **Contoh Kasus**: Guru mengedit/menginput nilai belajar siswa.
-* **Kode Program (Controller)**: Terletak di [Guru::updateNilai()](file:///D:/LSP/19221112/19221112/app/Controllers/Guru.php#L101-L129)
+*Update* digunakan untuk memodifikasi data yang sudah tersimpan di database berdasarkan ID uniknya.
+* **Contoh Kasus**: Dosen Penguji menginput atau mengubah nilai hasil tes masuk calon mahasiswa.
+* **Kode Program (Controller)**: Terletak di [Penguji::updateNilai()](file:///D:/LSP/19221112/19221112/app/Controllers/Penguji.php#L106-L134)
 * **Cara Menjelaskan ke Asesor**:
-  1. Guru mengeklik tombol "Edit Nilai" pada siswa tertentu di halaman utama portal guru.
-  2. Sistem memuat view [edit_nilai.php](file:///D:/LSP/19221112/19221112/app/Views/guru/edit_nilai.php) berisi data siswa dan nilai saat ini berdasarkan ID Siswa & ID Mapel.
-  3. Guru mengubah input nilai dan menekan tombol Simpan.
-  4. Controller melakukan pengecekan apakah baris nilai sudah ada di tabel `nilai`.
-     * Jika **Sudah Ada**, program menjalankan query **UPDATE** pada baris nilai tersebut.
-     * Jika **Belum Ada**, program menjalankan query **INSERT** baru.
-  5. Setelah sukses, program dialihkan kembali ke halaman utama guru (`redirect()->to('/guru')`) dengan menyertakan pesan sukses (*Flash Data*).
+  1. Dosen Penguji mengeklik tombol "Input/Edit Nilai" pada tabel pendaftar di portal dosen.
+  2. View [edit_nilai.php](file:///D:/LSP/19221112/19221112/app/Views/penguji/edit_nilai.php) memuat data nilai yang ada.
+  3. Penguji memasukkan nilai baru (0-100) dan mengirimkan form.
+  4. Controller mengecek keberadaan data nilai pendaftar di tabel `nilai_seleksi`:
+     * Jika **Sudah Ada**, program melakukan query **UPDATE**.
+     * Jika **Belum Ada**, program melakukan query **INSERT** baru.
+  5. Pengguna dialihkan kembali ke dashboard penguji (`redirect()->to('/penguji')`) dengan pesan sukses.
 
 ---
 
 ### 🔴 D. DELETE (Menghapus Data)
 *Delete* digunakan untuk menghapus data dari database.
-* **Contoh Kasus**: Admin menghapus data siswa yang sudah keluar.
-* **Kode Program (Controller)**: Terletak di [Admin::siswaDelete()](file:///D:/LSP/19221112/19221112/app/Controllers/Admin.php#L98-L103)
+* **Contoh Kasus**: Admin menghapus data calon mahasiswa yang membatalkan pendaftaran.
+* **Kode Program (Controller)**: Terletak di [Admin::calonDelete()](file:///D:/LSP/19221112/19221112/app/Controllers/Admin.php#L104-L109)
 * **Cara Menjelaskan ke Asesor**:
-  1. Admin mengeklik tombol ikon sampah (Delete) pada baris data siswa di halaman dashboard admin.
-  2. Program mengirimkan request penghapusan ke route `/admin/siswa/delete/(:num)`.
-  3. Controller memanggil `siswaModel->delete($id)` untuk menghapus data siswa dengan ID yang sesuai di tabel `siswa`.
-  4. **Penting (Integritas Data)**: Karena database dikonfigurasi dengan relasi **Foreign Key** dan opsi **ON DELETE CASCADE**, maka saat data siswa dihapus, seluruh data nilai miliknya di tabel `nilai` akan otomatis ikut terhapus di tingkat database secara aman.
+  1. Admin mengeklik tombol ikon hapus pada siswa tertentu di panel admin.
+  2. Data dikirim ke route `/admin/calon/delete/(:num)`.
+  3. Controller memanggil `calonModel->delete($id)` untuk menghapus baris bersangkutan dari tabel `calon_mahasiswa`.
+  4. **Penting (Relasi Integrity)**: Karena tabel `nilai_seleksi` dikonfigurasi dengan relasi **Foreign Key** menggunakan opsi **ON DELETE CASCADE**, seluruh baris nilai ujian milik calon mahasiswa tersebut otomatis ikut terhapus di tingkat database demi integritas data.
 
 ---
 
 ## 🔒 3. Fitur Keamanan Terintegrasi pada CRUD
-1. **CSRF Protection**: Setiap form CRUD dilengkapi dengan token keamanan `<?= csrf_field(); ?>` untuk melindungi aplikasi dari manipulasi request dari pihak ketiga (*Cross-Site Request Forgery*).
-2. **Prepared Statements**: Framework CodeIgniter 4 secara otomatis mengamankan query database yang dieksekusi melalui Model/Query Builder untuk menangkal celah keamanan **SQL Injection**.
+1. **CSRF Protection**: Setiap form dilengkapi dengan token keamanan `<?= csrf_field(); ?>` untuk memvalidasi bahwa request berasal dari form resmi aplikasi STKIP Singkawang.
+2. **Prepared Statements**: Framework CodeIgniter 4 mengamankan query database yang dieksekusi melalui Model/Query Builder untuk menangkal celah keamanan **SQL Injection**.

@@ -1,7 +1,7 @@
-CREATE DATABASE IF NOT EXISTS `db_bimbel`;
-USE `db_bimbel`;
+CREATE DATABASE IF NOT EXISTS `db_pmb_stkip`;
+USE `db_pmb_stkip`;
 
--- 1. Table structure for table `users` (Admin)
+-- 1. Table structure for table `users` (Admin Panitia PMB)
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -15,9 +15,9 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `username`, `password`) VALUES
 (1, 'admin', '$2y$10$vK6n751u58B7eXhS4Gfeee94Vb4B8r5.UvKkM1B99tB0u1D9W2K8.');
 
--- 2. Table structure for table `guru`
-DROP TABLE IF EXISTS `guru`;
-CREATE TABLE `guru` (
+-- 2. Table structure for table `penguji` (Dosen Penguji / Pewawancara STKIP)
+DROP TABLE IF EXISTS `penguji`;
+CREATE TABLE `penguji` (
   `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `nip` VARCHAR(20) NOT NULL UNIQUE,
   `nama` VARCHAR(100) NOT NULL,
@@ -28,57 +28,77 @@ CREATE TABLE `guru` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Insert Guru Default (Password: guru123)
-INSERT INTO `guru` (`id`, `nip`, `nama`, `email`, `password`) VALUES
-(1, '19800101', 'Budi Santoso, S.Pd', 'budi@bimbel.com', '$2y$10$j8D0yY1sZp.i3960w0kYfO5Z1gD2YwG4r5E67v.47wU.6ZJb2z7Ie');
+-- Insert Penguji Default (Password: penguji123)
+INSERT INTO `penguji` (`id`, `nip`, `nama`, `email`, `password`) VALUES
+(1, '19900101', 'Dr. H. Andi Wijaya, M.Pd', 'andi@stkipsingkawang.ac.id', '$2y$10$6R6VpC6Q5Q9J0Z8y9r.T6O7Vb4B8r5.UvKkM1B99tB0u1D9W2K8.');
 
--- 3. Table structure for table `siswa`
-DROP TABLE IF EXISTS `siswa`;
-CREATE TABLE `siswa` (
+-- 3. Table structure for table `program_studi` (Program Studi di STKIP Singkawang)
+DROP TABLE IF EXISTS `program_studi`;
+CREATE TABLE `program_studi` (
   `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `nis` VARCHAR(20) NOT NULL UNIQUE,
-  `nama` VARCHAR(100) NOT NULL,
-  `kelas` VARCHAR(50) NOT NULL,
-  `email` VARCHAR(100) NOT NULL,
-  `tanggal_lahir` DATE NOT NULL,
-  `password` VARCHAR(255) NOT NULL,
-  `created_at` DATETIME DEFAULT NULL,
-  `updated_at` DATETIME DEFAULT NULL,
+  `nama_prodi` VARCHAR(100) NOT NULL,
+  `jenjang` VARCHAR(10) NOT NULL DEFAULT 'S1',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Insert Siswa Default (Password: 2010-10-10)
-INSERT INTO `siswa` (`id`, `nis`, `nama`, `kelas`, `email`, `tanggal_lahir`, `password`) VALUES
-(1, '20260001', 'Ahmad Dani', '10-SMA', 'dani@siswa.com', '2010-10-10', '$2y$10$TfRfe31z9XkZJp.u23y4eO9vKkM1B99tB0u1D9W2K8.HefF.5r0ee');
+-- Insert Program Studi STKIP Singkawang
+INSERT INTO `program_studi` (`id`, `nama_prodi`, `jenjang`) VALUES
+(1, 'Pendidikan Guru Sekolah Dasar (PGSD)', 'S1'),
+(2, 'Pendidikan Bahasa Indonesia', 'S1'),
+(3, 'Pendidikan Matematika', 'S1'),
+(4, 'Pendidikan Fisika', 'S1'),
+(5, 'Pendidikan Bimbingan Konseling (BK)', 'S1');
 
--- 4. Table structure for table `matapelajaran`
-DROP TABLE IF EXISTS `matapelajaran`;
-CREATE TABLE `matapelajaran` (
+-- 4. Table structure for table `calon_mahasiswa` (Pendaftar PMB)
+DROP TABLE IF EXISTS `calon_mahasiswa`;
+CREATE TABLE `calon_mahasiswa` (
   `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `nama_mapel` VARCHAR(100) NOT NULL,
-  `guru_id` INT(11) UNSIGNED NOT NULL,
+  `nomor_pendaftaran` VARCHAR(20) NOT NULL UNIQUE,
+  `nama` VARCHAR(100) NOT NULL,
+  `email` VARCHAR(100) NOT NULL,
+  `tanggal_lahir` DATE NOT NULL,
+  `asal_sekolah` VARCHAR(100) NOT NULL,
+  `prodi_id` INT(11) UNSIGNED NOT NULL,
+  `status_seleksi` ENUM('pending', 'lulus', 'tidak lulus') NOT NULL DEFAULT 'pending',
+  `password` VARCHAR(255) NOT NULL,
+  `created_at` DATETIME DEFAULT NULL,
+  `updated_at` DATETIME DEFAULT NULL,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`guru_id`) REFERENCES `guru`(`id`) ON DELETE CASCADE
+  FOREIGN KEY (`prodi_id`) REFERENCES `program_studi`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Insert Mata Pelajaran Default
-INSERT INTO `matapelajaran` (`id`, `nama_mapel`, `guru_id`) VALUES
-(1, 'Matematika', 1),
-(2, 'Fisika', 1);
+-- Insert Calon Mahasiswa Default (Password: 2005-05-15)
+INSERT INTO `calon_mahasiswa` (`id`, `nomor_pendaftaran`, `nama`, `email`, `tanggal_lahir`, `asal_sekolah`, `prodi_id`, `status_seleksi`, `password`) VALUES
+(1, 'PMB20260001', 'Rian Hidayat', 'rian@gmail.com', '2005-05-15', 'SMA Negeri 1 Singkawang', 1, 'pending', '$2y$10$t2m.sK7G.7p8iW2kQY6xreO9vKkM1B99tB0u1D9W2K8.HefF.5r0ee');
 
--- 5. Table structure for table `nilai`
-DROP TABLE IF EXISTS `nilai`;
-CREATE TABLE `nilai` (
+-- 5. Table structure for table `mata_uji` (Mata Uji Seleksi Masuk STKIP)
+DROP TABLE IF EXISTS `mata_uji`;
+CREATE TABLE `mata_uji` (
   `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `siswa_id` INT(11) UNSIGNED NOT NULL,
-  `mapel_id` INT(11) UNSIGNED NOT NULL,
+  `nama_ujian` VARCHAR(100) NOT NULL,
+  `penguji_id` INT(11) UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`penguji_id`) REFERENCES `penguji`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Insert Mata Uji Default
+INSERT INTO `mata_uji` (`id`, `nama_ujian`, `penguji_id`) VALUES
+(1, 'Tes Potensi Akademik (TPA)', 1),
+(2, 'Tes Wawancara & Minat Bakat', 1);
+
+-- 6. Table structure for table `nilai_seleksi`
+DROP TABLE IF EXISTS `nilai_seleksi`;
+CREATE TABLE `nilai_seleksi` (
+  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `calon_id` INT(11) UNSIGNED NOT NULL,
+  `mata_uji_id` INT(11) UNSIGNED NOT NULL,
   `nilai` INT(3) DEFAULT 0,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`siswa_id`) REFERENCES `siswa`(`id`) ON DELETE CASCADE,
-  FOREIGN KEY (`mapel_id`) REFERENCES `matapelajaran`(`id`) ON DELETE CASCADE
+  FOREIGN KEY (`calon_id`) REFERENCES `calon_mahasiswa`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`mata_uji_id`) REFERENCES `mata_uji`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Insert Nilai Default
-INSERT INTO `nilai` (`siswa_id`, `mapel_id`, `nilai`) VALUES
-(1, 1, 85),
-(1, 2, 90);
+-- Insert Nilai Default untuk Rian
+INSERT INTO `nilai_seleksi` (`calon_id`, `mata_uji_id`, `nilai`) VALUES
+(1, 1, 80),
+(1, 2, 85);

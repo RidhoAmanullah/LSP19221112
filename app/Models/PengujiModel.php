@@ -2,9 +2,9 @@
 namespace App\Models;
 use CodeIgniter\Model;
 
-class GuruModel extends Model
+class PengujiModel extends Model
 {
-    protected $table            = 'guru';
+    protected $table            = 'penguji';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $allowedFields    = ['nip', 'nama', 'email', 'password'];

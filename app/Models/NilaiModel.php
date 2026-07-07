@@ -4,8 +4,8 @@ use CodeIgniter\Model;
 
 class NilaiModel extends Model
 {
-    protected $table            = 'nilai';
+    protected $table            = 'nilai_seleksi';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
-    protected $allowedFields    = ['siswa_id', 'mapel_id', 'nilai'];
+    protected $allowedFields    = ['calon_id', 'mata_uji_id', 'nilai'];
 }
